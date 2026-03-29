@@ -1,0 +1,7 @@
+require_relative "crypto_tracker_pro/version"
+require_relative "crypto_tracker_pro/api_client"
+require_relative "crypto_tracker_pro/analyzer"
+require_relative "crypto_tracker_pro/portfolio_calculator"
+require_relative "crypto_tracker_pro/chart_drawer"
+require_relative "crypto_tracker_pro/app"
+require_relative "crypto_tracker_pro/console_app"
