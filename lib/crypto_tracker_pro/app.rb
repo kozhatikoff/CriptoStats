@@ -19,7 +19,8 @@ module CryptoTrackerPro
         background "#F0F0F0"
       end
 
-      selected_coin = TkVariable.new(api.get_coins_list.first)
+      coin_names = api.get_coins_list
+      selected_coin = TkVariable.new(coin_names.first)
       selected_currency = TkVariable.new("USD")
 
       theme_btn = TkButton.new(root) do
@@ -28,12 +29,13 @@ module CryptoTrackerPro
       end
 
       TkLabel.new(root, text: "Монета:").pack
-      Tk::Tile::Combobox.new(root) do
-        values api.get_coins_list
+      coin_combobox = Tk::Tile::Combobox.new(root) do
+        values coin_names
         textvariable selected_coin
         state "readonly"
         pack
       end
+      coin_combobox.set(coin_names.first)
 
       TkLabel.new(root, text: "Валюта:").pack
       curr_frame = TkFrame.new(root)
@@ -75,12 +77,18 @@ module CryptoTrackerPro
         output_text.value = "Загрузка..."
 
         begin
-          raw_prices = api.fetch_data(selected_coin.value)
-          prices = api.convert_prices(raw_prices, selected_currency.value)
+          coin_name = selected_coin.value.to_s.strip
+          coin_name = coin_names.first if coin_name.empty?
+          currency = selected_currency.value.to_s.strip.upcase
 
-          output_text.value = analyzer.build_report_text(prices, selected_currency.value)
+          raw_prices = api.fetch_data(coin_name)
+          prices = api.convert_prices(raw_prices, currency)
+
+          output_text.value = analyzer.build_report_text(prices, currency)
           portfolio_text.value = portfolio.calculate_investment(prices, 100)
           chart_drawer.draw(canvas, prices)
+        rescue ArgumentError => e
+          output_text.value = "Ошибка данных: #{e.message}"
         rescue StandardError => e
           output_text.value = "Ошибка сети: #{e.message}"
         end

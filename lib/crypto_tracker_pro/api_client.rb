@@ -16,7 +16,8 @@ module CryptoTrackerPro
     }.freeze
 
     def fetch_data(coin_name)
-      coin_id = COINS[coin_name]
+      normalized_coin = normalize_coin_name(coin_name)
+      coin_id = COINS[normalized_coin]
       raise ArgumentError, "Неизвестная монета: #{coin_name}" if coin_id.nil?
 
       url = URI("https://api.coingecko.com/api/v3/coins/#{coin_id}/market_chart?vs_currency=usd&days=365")
@@ -39,6 +40,17 @@ module CryptoTrackerPro
       raise ArgumentError, "Неподдерживаемая валюта: #{currency}" if rate.nil?
 
       prices.map { |price| price * rate }
+    end
+
+    private
+
+    def normalize_coin_name(coin_name)
+      value = coin_name.to_s.strip
+      return value if value.empty?
+
+      # Tk may return a string with non-UTF-8 encoding.
+      value = value.dup.force_encoding("UTF-8")
+      value.valid_encoding? ? value : value.encode("UTF-8", invalid: :replace, undef: :replace, replace: "")
     end
   end
 end
